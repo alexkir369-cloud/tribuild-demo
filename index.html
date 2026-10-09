@@ -177,7 +177,16 @@ table.t td{padding:12px;border-top:1px solid var(--border)}table.t tr:nth-child(
 .dpanel{background:var(--navy-700);border-radius:var(--radius-lg);padding:20px;display:grid;gap:8px}
 /* motion */
 @keyframes kb{from{transform:scale(1)}to{transform:scale(1.09)}}
-.hero>.media img,.rain>.media img{animation:kb 22s ease-in-out infinite alternate;transform-origin:60% 40%}
+.hero>.media img,.rain>.media img{animation:kb 22s ease-in-out infinite alternate;transform-origin:75% 40%}
+.hero>.media img,.hero video{object-position:72% 50%}
+.rain>.media img,.rain video{object-position:80% 50%}
+@media(max-width:749px){
+  .hero>.media img{object-position:76% 50%}
+  .rain>.media img{object-position:88% 50%}
+  .rain>.media::after{background:linear-gradient(180deg,rgba(15,22,38,.10) 0%,rgba(15,22,38,.45) 45%,rgba(15,22,38,.93) 100%)}
+  .rain{min-height:520px}
+}
+.hero>.media img{object-position:72% 50%}.rain>.media img{object-position:78% 50%}
 .hero video,.rain video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .pause{position:absolute;right:var(--pad);bottom:16px;z-index:2;display:inline-flex;align-items:center;gap:6px;min-height:var(--touch);padding:0 14px;border-radius:var(--radius-pill);border:1px solid rgba(220,228,239,.5);background:rgba(15,22,38,.55);color:var(--steel-100);font:600 13px var(--font-sans);cursor:pointer}
 .js .reveal{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
@@ -314,7 +323,11 @@ const toastEl = $('#toast'); let tt;
 window.toast = msg => { toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(tt); tt = setTimeout(()=>toastEl.classList.remove('show'),2400); };
 
 // Image with branded fallback. Drop real files into /images with these names to replace placeholders.
-const media = (file, label, cls='', fb='') => `<div class="media ${cls}"><img src="${src(file)}" ${fb?`data-fb="${src(fb)}"`:''} alt="" loading="lazy" onerror="if(this.dataset.fb){this.src=this.dataset.fb;this.dataset.fb=''}else{this.remove()}"><span class="ph" aria-hidden="true">${esc(label)}</span></div>`;
+const isMobile = () => window.matchMedia('(max-width: 749px)').matches;
+// Image with fallback chain: mobile version (phones) -> main file -> fallback texture -> neutral placeholder.
+const media = (file, label, cls='', fb='', mob='') => { const list = []; if (mob && isMobile()) list.push(mob); list.push(file); if (fb) list.push(fb);
+  const first = src(list[0]); const rest = list.slice(1).map(src).join('|');
+  return `<div class="media ${cls}"><img src="${first}" data-chain="${rest}" alt="" loading="lazy" onerror="var c=this.dataset.chain?this.dataset.chain.split('|'):[];if(c.length){this.src=c.shift();this.dataset.chain=c.join('|')}else{this.remove()}"><span class="ph" aria-hidden="true">${esc(label)}</span></div>`; };
 const mediaFix = root => $$('.media img',root).forEach(img => { const ph = img.nextElementSibling; const hide = () => { if(ph) ph.style.display='none'; }; if (img.complete && img.naturalWidth) hide(); else img.addEventListener('load', hide); });
 
 const card = p => `<a class="card reveal" href="#/product/${p.id}">
@@ -324,7 +337,7 @@ const card = p => `<a class="card reveal" href="#/product/${p.id}">
 
 const pages = {
 home(){ return `
-<section class="hero" data-video="hero.mp4">${media('hero.jpg','','','texture.jpg')}
+<section class="hero" data-video="hero.mp4">${media('hero.jpg','','','texture.jpg','hero-mobile.jpg')}
   <div class="wrap"><div class="content">
     <p class="eyebrow">TRIBUILD · Est. 2026</p>
     <h1 class="display">Built for the site.<br>Built to last.</h1>
@@ -342,7 +355,7 @@ home(){ return `
   <div class="chips">${['Electrician','Carpenter','Groundworks','Plumber','Winter work','Hi-vis'].map(t=>`<a class="chip" href="#/category/all">${t}</a>`).join('')}</div></section>
 <section class="wrap" style="padding-bottom:32px"><div class="head"><h2>Shop by feature</h2></div>
   <div class="chips">${Object.entries(FEAT).map(([k,n])=>`<a class="chip" href="#/feature/${k}">${n}</a>`).join('')}</div></section>
-<section class="wrap" style="padding-bottom:40px"><div class="rain reveal" data-video="rain.mp4">${media('rainwear.jpg','','','texture.jpg')}<div class="drops" aria-hidden="true"></div>
+<section class="wrap" style="padding-bottom:40px"><div class="rain reveal" data-video="rain.mp4">${media('rainwear.jpg','','','texture.jpg','rainwear-mobile.jpg')}<div class="drops" aria-hidden="true"></div>
   <div class="content"><p class="eyebrow">The Liffey collection · Rainwear</p><h2 class="display" style="font-size:clamp(30px,4.5vw,52px)">Rain on site.<br>Dry underneath.</h2>
   <p>Waterproof shells and trousers for Irish and British weather.</p><div class="row"><a class="btn btn-primary" href="#/use/rainwear">Shop rainwear</a></div></div></div></section>
 <section class="wrap" style="padding-bottom:40px"><div class="head"><h2>Bestsellers</h2><a class="link small" href="#/category/all">View all</a></div>
@@ -541,7 +554,18 @@ function bind(route, arg){
 }
 const reduce = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const saveData = () => (navigator.connection && navigator.connection.saveData) || false;
+function mobileArt(root){
+  if (!window.matchMedia('(max-width: 749px)').matches) return;
+  [['.hero>.media img','hero-mobile.jpg'],['.rain>.media img','rainwear-mobile.jpg']].forEach(([sel,file])=>{
+    $$(sel, root).forEach(img => {
+      const probe = new Image();
+      probe.onload = () => { img.src = probe.src; img.style.objectPosition = '50% 50%'; };
+      probe.src = src(file);
+    });
+  });
+}
 function enhance(root){
+  mobileArt(root);
   // reveal on scroll
   const els = $$('.reveal', root);
   if ('IntersectionObserver' in window && !reduce()) {
