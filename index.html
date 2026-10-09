@@ -213,6 +213,32 @@ table.t td{padding:12px;border-top:1px solid var(--border)}table.t tr:nth-child(
 .mega h3{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:10px;font-family:var(--font-display)}
 .mega a{display:block;padding:6px 0;text-decoration:none}.mega a:hover{text-decoration:underline}
 .drawer h3{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-muted);margin:18px 0 4px;font-family:var(--font-display)}
+/* ticker */
+.ticker{background:var(--navy-700);color:var(--steel-100);overflow:hidden;font:600 13px/1 var(--font-sans);border-bottom:1px solid rgba(188,203,224,.12)}
+.ticker .track{display:flex;width:max-content;animation:tick 38s linear infinite}
+.ticker:hover .track,.ticker:focus-within .track{animation-play-state:paused}
+.ticker ul{display:flex;margin:0;padding:0;list-style:none}
+.ticker li{display:flex;align-items:center;gap:10px;padding:11px 22px;white-space:nowrap}
+.ticker li::after{content:"";width:6px;height:6px;border-radius:50%;background:var(--hivis-500);margin-left:22px}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+/* shop the look */
+.look{position:relative;background:var(--navy-800)}
+.look .in{position:relative;aspect-ratio:1200/896}
+.spot .look .media{position:absolute;inset:0;min-height:0;height:100%}
+@media(min-width:900px){.spot .look{display:flex;align-items:center}.spot .look .in{width:100%}}
+.hs{position:absolute;transform:translate(-50%,-50%);width:44px;height:44px;border:0;padding:0;background:none;cursor:pointer;z-index:2}
+.hs::before{content:"";position:absolute;inset:11px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px rgba(255,122,26,.9),0 2px 8px rgba(0,0,0,.35)}
+.hs::after{content:"";position:absolute;inset:11px;border-radius:50%;border:2px solid #fff;animation:pulse 2.2s ease-out infinite}
+.hs:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:50%}
+@keyframes pulse{0%{transform:scale(1);opacity:.9}100%{transform:scale(2.4);opacity:0}}
+.pop{position:absolute;z-index:3;width:min(230px,62vw);background:var(--surface);color:var(--ink);border-radius:var(--radius-md);box-shadow:0 12px 32px rgba(15,22,38,.35);padding:10px;display:grid;grid-template-columns:64px 1fr;gap:10px;align-items:center;transform:translate(calc(-100% - 18px),-50%);text-decoration:none}
+.pop[hidden]{display:none}
+.pop img{width:64px;height:80px;object-fit:cover;border-radius:8px;background:var(--canvas)}
+.pop b{display:block;font:600 14px/18px var(--font-sans)}
+.pop .price{font-size:16px;line-height:22px}
+.pop .go{font-size:12px;color:var(--ink-muted);text-decoration:underline}
+.look-tip{position:absolute;left:12px;top:12px;z-index:2;background:rgba(15,22,38,.72);color:var(--steel-100);font:600 12px/1 var(--font-sans);padding:8px 10px;border-radius:999px}
+@media(prefers-reduced-motion:reduce){.ticker .track{animation:none}.ticker ul[aria-hidden]{display:none}.ticker .track{flex-wrap:wrap}.hs::after{animation:none}}
 @media(prefers-reduced-motion:reduce){.hero>.media img,.rain>.media img,.drops{animation:none}.js .reveal{opacity:1;transform:none}.card:hover{transform:none}}
 /* footer */
 footer{background:var(--navy-900);color:var(--steel-300);padding-block:40px;font-size:14px}
@@ -260,6 +286,7 @@ footer input{min-height:var(--touch);border-radius:var(--radius-md);border:1px s
   <div><h3>Shop by feature</h3><a href="#/feature/waterproof">Waterproof</a><a href="#/feature/hivis">Hi-vis</a><a href="#/feature/stretch">4-way stretch</a><a href="#/feature/insulated">Insulated</a><a href="#/feature/fr">Flame retardant</a></div>
   <div><h3>Shop by use</h3><a href="#/use/construction">Construction</a><a href="#/use/trades">Trades and crafts</a><a href="#/use/warehouse">Warehouse and logistics</a><a href="#/use/rainwear">Rainwear</a><a href="#/use/winter">Winter</a></div>
 </div></div></header>
+<div class="ticker" aria-label="Store benefits"><div class="track"><ul><li>Free delivery over [amount]</li><li>Free returns within [days] days</li><li>CE / UKCA certified PPE</li><li>Business accounts · pay by invoice</li><li>Logo embroidery for teams</li><li>Ships to Ireland, UK and EU</li></ul><ul aria-hidden="true"><li>Free delivery over [amount]</li><li>Free returns within [days] days</li><li>CE / UKCA certified PPE</li><li>Business accounts · pay by invoice</li><li>Logo embroidery for teams</li><li>Ships to Ireland, UK and EU</li></ul></div></div>
 <div class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Menu">
   <div class="bg" data-close></div>
   <div class="panel">
@@ -320,6 +347,12 @@ const unit = (p, qty=1) => { const tierDisc = biz() ? (qty>=50?.15:qty>=10?.10:0
 const money = v => new Intl.NumberFormat(R().locale,{style:'currency',currency:R().cur}).format(v);
 const vatTxt = () => biz() ? 'excl. VAT' : 'incl. VAT';
 const toastEl = $('#toast'); let tt;
+document.addEventListener('click', e => {
+  const b = e.target.closest('.hs');
+  $$('.hs[aria-expanded="true"]').forEach(x => { if (x !== b) { x.setAttribute('aria-expanded','false'); const p=document.getElementById(x.getAttribute('aria-controls')); if(p) p.hidden=true; } });
+  if (b) { const p=document.getElementById(b.getAttribute('aria-controls')); const open=b.getAttribute('aria-expanded')!=='true'; b.setAttribute('aria-expanded',String(open)); if(p) p.hidden=!open; }
+});
+document.addEventListener('keydown', e => { if (e.key==='Escape') $$('.hs[aria-expanded="true"]').forEach(x => { x.setAttribute('aria-expanded','false'); const p=document.getElementById(x.getAttribute('aria-controls')); if(p) p.hidden=true; x.focus(); }); });
 window.toast = msg => { toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(tt); tt = setTimeout(()=>toastEl.classList.remove('show'),2400); };
 
 // Image with branded fallback. Drop real files into /images with these names to replace placeholders.
@@ -335,6 +368,7 @@ const card = p => `<a class="card reveal" href="#/product/${p.id}">
   <span class="small">${esc(p.name)}</span><span class="price">${money(unit(p))}</span>
   <span class="cap">${esc(p.sizes[0])}${p.sizes.length>1?'–'+esc(p.sizes[p.sizes.length-1]):''}${p.colours.length>1?' · '+p.colours.length+' colours':''}</span></a>`;
 
+const LOOK = [['tshirt',68.5,35],['work-trousers',71,58],['knee-pads',64.5,79],['safety-boots',86.5,72]];
 const pages = {
 home(){ return `
 <section class="hero" data-video="hero.mp4">${media('hero.jpg','','','texture.jpg','hero-mobile.jpg')}
@@ -347,7 +381,7 @@ home(){ return `
 <div class="wrap" style="padding-top:16px"><div class="trust reveal"><div>Free delivery over [amount]</div><div>Free returns within [days] days</div><div>Business accounts</div></div></div>
 <section class="section wrap"><div class="head"><h2>Shop by category</h2><a class="link small" href="#/category/all">All products</a></div>
   <div class="grid g4">${CATS.map(([k,n])=>`<a class="tile reveal" href="#/category/${k}">${media('cat-'+k+'.jpg',n,'light')}<span>${n}</span></a>`).join('')}</div></section>
-<section class="wrap"><div class="spot reveal">${media('collection.jpg','Collection photo','','texture.jpg')}
+<section class="wrap"><div class="spot reveal"><div class="look"><div class="in">${media('collection.jpg','Collection photo','','texture.jpg')}<span class="look-tip">Shop the look · tap the dots</span>${LOOK.map(([id,x,y],i)=>{const p=P.find(q=>q.id===id);return `<button class="hs" type="button" style="left:${x}%;top:${y}%" aria-expanded="false" aria-controls="pop${i}" aria-label="Show ${esc(p.name)}"></button><a class="pop" id="pop${i}" hidden href="#/product/${p.id}" style="left:${x}%;top:${y}%"><img src="${src(p.img)}" alt=""><span><b>${esc(p.name)}</b><span class="price">${money(unit(p))}</span><br><span class="go">View product</span></span></a>`}).join('')}</div></div>
   <div class="txt"><p class="eyebrow">The Burren collection</p><h2 class="display" style="font-size:clamp(28px,4vw,44px)">Made to kneel.<br>Made to last.</h2>
   <p>Reinforced knees, holster pockets and stretch where you bend. Fits the TRIBUILD knee pad system.</p>
   <div><a class="btn btn-dark" href="#/collections">Explore the collection</a></div></div></div></section>
