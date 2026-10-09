@@ -188,6 +188,7 @@ table.t td{padding:12px;border-top:1px solid var(--border)}table.t tr:nth-child(
   .rain{min-height:520px}
 }
 .hero>.media img{object-position:72% 50%}.rain>.media img{object-position:78% 50%}
+@media(min-width:750px){.rain>.media img,.rain video{object-position:78% 8%;transform-origin:78% 5%}.hero>.media img{object-position:72% 20%;transform-origin:75% 10%}}
 .hero video,.rain video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .pause{position:absolute;right:var(--pad);bottom:16px;z-index:2;display:inline-flex;align-items:center;gap:6px;min-height:var(--touch);padding:0 14px;border-radius:var(--radius-pill);border:1px solid rgba(220,228,239,.5);background:rgba(15,22,38,.55);color:var(--steel-100);font:600 13px var(--font-sans);cursor:pointer}
 .js .reveal{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
